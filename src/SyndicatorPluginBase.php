@@ -5,7 +5,7 @@ namespace Drupal\stanford_syndication;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeInterface;
-use Drupal\shs\StringTranslationTrait;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Base class for syndicator plugins.
