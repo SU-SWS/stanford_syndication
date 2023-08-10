@@ -1,0 +1,6 @@
+stanford_syndication.settings:
+  title: 'Stanford Syndication'
+  description: 'Configure Syndication settings.'
+  parent: system.admin_config_services
+  route_name: stanford_syndication.settings
+  weight: 10

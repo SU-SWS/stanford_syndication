@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for stanford_syndication module.
+ */
+
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
+use Drupal\stanford_syndication\Events\SyndicationEntityActionEventInterface;
+use Drupal\stanford_syndication\Events\SyndicationEntityActionEvent;
+use Drupal\stanford_syndication\Events\SyndicationEvents;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function stanford_syndication_node_insert(NodeInterface $node) {
+  drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::INSERT_ACTION);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function stanford_syndication_node_update(NodeInterface $node) {
+  drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::UPDATE_ACTION);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function stanford_syndication_node_delete(NodeInterface $node) {
+  drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::DELETE_ACTION);
+}
+
+/**
+ * Dispatches the syndication event.
+ *
+ * @param \Drupal\stanford_syndication\Events\SyndicationEntityActionEventInterface $event
+ *   Event to dispatch.
+ */
+function _stanford_syndication_dispatch_event(NodeInterface $node, string $action) {
+  if ($node->get('syndication')->getString() && $node->isPublished()) {
+    $event = new SyndicationEntityActionEvent($node, $action);
+    \Drupal::service('event_dispatcher')
+      ->dispatch($event, SyndicationEvents::ENTITY_ACTION);
+  }
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function stanford_syndication_entity_base_field_info(EntityTypeInterface $entity_type) {
+  $fields = [];
+  if ($entity_type->id() == 'node') {
+    $fields['syndication'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Syndicate Content'))
+      ->setDescription(t('Send a notification to the appropriate systems about this piece of content.'))
+      ->setStorageRequired(TRUE)
+      ->setDisplayConfigurable('form', TRUE);
+  }
+  return $fields;
+}
+
+/**
+ * Implements hook_entity_field_access().
+ */
+function stanford_syndication_entity_field_access($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
+  if ($field_definition->getName() == 'syndication' && $field_definition->getTargetEntityTypeId() == 'node') {
+    $config = \Drupal::config('stanford_syndication.settings');
+    $show_field = $config->get('enabled') && $account->hasPermission('administer stanford_syndication content');
+    // Use forbidden since allowedIf will be neutral if false.
+    return AccessResult::forbiddenIf(!$show_field);
+  }
+  return AccessResult::neutral();
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function stanford_syndication_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['syndication'])) {
+    $form['syndication_group'] = [
+      '#type' => 'details',
+      '#title' => t('Syndication Connection'),
+      '#collapsed' => FALSE,
+      '#collapsible' => TRUE,
+      '#tree' => FALSE,
+      '#group' => 'advanced',
+      '#access' => $form['syndication']['#access'],
+    ];
+    $form['syndication']['#group'] = 'syndication_group';
+  }
+}
+
