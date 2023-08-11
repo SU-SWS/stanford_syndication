@@ -77,7 +77,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
       'webhook' => 'bar',
       'access_token' => 'foo',
     ];
-    $def = [];
+    $def = ['label' => 'foo'];
     $this->plugin = StanfordEnterprise::create($container, $config, '', $def);
   }
 
@@ -113,6 +113,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
   }
 
   public function testFormMethods() {
+    $this->assertNotEmpty($this->plugin->label());
     $form = [];
     $form_state = new FormState();
     $elements = $this->plugin->buildConfigurationForm($form, $form_state);

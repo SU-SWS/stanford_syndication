@@ -1,0 +1,7 @@
+syndicator.plugin:
+  type: mapping
+  label: 'Syndicator'
+  mapping:
+    id:
+      type: string
+      label: 'ID'

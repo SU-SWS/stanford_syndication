@@ -110,6 +110,7 @@ class SyndicationSettings extends ConfigFormBase {
       $plugin->submitConfigurationForm($form['syndicators'][$plugin_id], $plugin_form_state);
 
       if ($config = $plugin->getConfiguration()) {
+        $config['id'] = $plugin_id;
         $settings->set("syndicators.$plugin_id", $config);
       }
     }

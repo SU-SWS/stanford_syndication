@@ -6,7 +6,7 @@ use Drupal\node\NodeInterface;
 
 interface SyndicationEntityActionEventInterface {
 
-  const INSERT_ACTION = 'action';
+  const INSERT_ACTION = 'insert';
 
   const UPDATE_ACTION = 'update';
 

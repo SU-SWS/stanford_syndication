@@ -95,7 +95,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     $element['access_token'] = [
       '#type' => 'textfield',
       '#title' => $this->t('API Access Token'),
-      '#default_value' => $this->state->get('stanford_syndication.token'),
+      '#default_value' => $this->state->get('stanford_enterprise.token'),
     ];
 
     return $element;
@@ -105,7 +105,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->state->set('stanford_syndication.token', $form_state->getValue('access_token'));
+    $this->state->set('stanford_enterprise.token', $form_state->getValue('access_token'));
     $form_state->unsetValue('access_token');
     $form_state->setValue('node_types', array_values(array_filter($form_state->getValue('node_types'))));
     parent::submitConfigurationForm($form, $form_state);
@@ -115,10 +115,11 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function insert(NodeInterface $node): void {
+    $access_token =  $this->state->get('stanford_enterprise.token');
     if (
       !in_array($node->bundle(), $this->getConfiguration()['node_types']) ||
       !$this->getConfiguration()['webhook'] ||
-      !$this->getConfiguration()['access_token']
+      !$access_token
     ) {
       return;
     }
@@ -126,7 +127,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     $options = [
       'timeout' => 5,
       'headers' => [
-        'X-Webhook-Token' => $this->state->get('stanford_syndication.token'),
+        'X-Webhook-Token' => $this->state->get('stanford_enterprise.token'),
       ],
       'body' => json_encode([
         'cms_type' => 'Drupal 9',
