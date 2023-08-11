@@ -84,7 +84,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     $element['node_types'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Node Types'),
-      '#default_value' => $this->getConfiguration()['node_types'],
+      '#default_value' => $this->getConfiguration()['node_types'] ?? [],
       '#options' => $node_types,
     ];
     $element['webhook'] = [
@@ -105,9 +105,14 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $chosen_types = array_values(array_filter($form_state->getValue('node_types')));
+    if (empty($chosen_types)) {
+      $this->setConfiguration([]);
+      return;
+    }
     $this->state->set('stanford_enterprise.token', $form_state->getValue('access_token'));
     $form_state->unsetValue('access_token');
-    $form_state->setValue('node_types', array_values(array_filter($form_state->getValue('node_types'))));
+    $form_state->setValue('node_types', $chosen_types);
     parent::submitConfigurationForm($form, $form_state);
   }
 
@@ -115,7 +120,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function insert(NodeInterface $node): void {
-    $access_token =  $this->state->get('stanford_enterprise.token');
+    $access_token = $this->state->get('stanford_enterprise.token');
     if (
       !in_array($node->bundle(), $this->getConfiguration()['node_types']) ||
       !$this->getConfiguration()['webhook'] ||

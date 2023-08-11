@@ -102,14 +102,15 @@ class SyndicationSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $settings = $this->config('stanford_syndication.settings')
-      ->set('enabled', $form_state->getValue('enabled'));
+      ->set('enabled', $form_state->getValue('enabled'))
+      ->set('syndicators', []);
 
     /** @var \Drupal\stanford_syndication\SyndicatorInterface $plugin */
     foreach ($form_state->get('syndicators') as $plugin_id => $plugin) {
       $plugin_form_state = SubformState::createForSubform($form['syndicators'][$plugin_id], $form, $form_state);
       $plugin->submitConfigurationForm($form['syndicators'][$plugin_id], $plugin_form_state);
-
-      if ($config = $plugin->getConfiguration()) {
+      $config = $plugin->getConfiguration();
+      if (array_filter($config)) {
         $config['id'] = $plugin_id;
         $settings->set("syndicators.$plugin_id", $config);
       }
