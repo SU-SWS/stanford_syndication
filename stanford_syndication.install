@@ -8,7 +8,7 @@
 /**
  * Implements hook_install().
  */
-function stanford_syndication_install($is_syncing) {
+function stanford_syndication_install() {
   $form_displays = \Drupal::entityTypeManager()
     ->getStorage('entity_form_display')
     ->loadByProperties(['targetEntityType' => 'node', 'mode' => 'default']);
@@ -16,4 +16,11 @@ function stanford_syndication_install($is_syncing) {
   foreach ($form_displays as $form) {
     $form->setComponent('syndication')->save();
   }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function stanford_syndication_uninstall() {
+  \Drupal::state()->delete('stanford_enterprise.token');
 }

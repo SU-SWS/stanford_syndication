@@ -105,14 +105,22 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $token = $form_state->getValue('access_token');
+    $form_state->unsetValue('access_token');
+    if(empty($token)){
+      $this->state->delete('stanford_enterprise.token');
+    }
+    else {
+      $this->state->set('stanford_enterprise.token', $token);
+    }
+
     $chosen_types = array_values(array_filter($form_state->getValue('node_types')));
+    $form_state->setValue('node_types', $chosen_types);
     if (empty($chosen_types)) {
       $this->setConfiguration([]);
       return;
     }
-    $this->state->set('stanford_enterprise.token', $form_state->getValue('access_token'));
-    $form_state->unsetValue('access_token');
-    $form_state->setValue('node_types', $chosen_types);
+
     parent::submitConfigurationForm($form, $form_state);
   }
 
