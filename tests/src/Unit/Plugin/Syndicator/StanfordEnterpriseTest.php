@@ -41,6 +41,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $client->method('request')
       ->will($this->returnCallback([$this, 'guzzleRequest']));
     $state = $this->createMock(StateInterface::class);
+    $state->method('get')->willReturn('foo');
 
     $nodeTypes = [
       'foo' => $this->createMock(NodeTypeInterface::class),
@@ -75,7 +76,6 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $config = [
       'node_types' => ['foo'],
       'webhook' => 'bar',
-      'access_token' => 'foo',
     ];
     $def = ['label' => 'foo'];
     $this->plugin = StanfordEnterprise::create($container, $config, '', $def);
