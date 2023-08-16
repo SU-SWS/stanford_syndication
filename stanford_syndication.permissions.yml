@@ -1,0 +1,7 @@
+administer stanford_syndication configuration:
+  title: 'Administer Syndication configuration'
+  description: 'Configure credentials and configuration for syndication integrations'
+  restrict access: true
+administer stanford_syndication content:
+  title: 'Administer Syndicated Content'
+  description: 'Enable the form checkbox to trigger the syndication webhooks'

@@ -1,0 +1,10 @@
+services:
+  stanford_syndication.event_subscriber:
+    class: Drupal\stanford_syndication\EventSubscriber\SyndicationEventSubscriber
+    arguments: ['@config.factory', '@logger.factory', '@plugin.manager.syndicator' ]
+    tags:
+      - { name: event_subscriber }
+
+  plugin.manager.syndicator:
+    class: Drupal\stanford_syndication\SyndicatorPluginManager
+    parent: default_plugin_manager

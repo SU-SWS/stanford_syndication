@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * stanford_syndication.install
+ */
+
+/**
+ * Implements hook_install().
+ */
+function stanford_syndication_install() {
+  $form_displays = \Drupal::entityTypeManager()
+    ->getStorage('entity_form_display')
+    ->loadByProperties(['targetEntityType' => 'node', 'mode' => 'default']);
+  /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $form */
+  foreach ($form_displays as $form) {
+    $form->setComponent('syndication')->save();
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function stanford_syndication_uninstall() {
+  \Drupal::state()->delete('stanford_enterprise.token');
+}

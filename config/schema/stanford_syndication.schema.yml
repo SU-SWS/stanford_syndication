@@ -1,0 +1,28 @@
+# Schema for the configuration files of the stanford_syndication module.
+
+syndicator.plugin.stanford_enterprise:
+  type: syndicator.plugin
+  mapping:
+    node_types:
+      type: sequence
+      label: Node Types
+      sequence:
+        type: string
+        label: Node Type
+    webhook:
+      type: string
+      label: Webhook URL
+
+stanford_syndication.settings:
+  type: config_object
+  label: Syndication settings
+  mapping:
+    enabled:
+      type: boolean
+      label: Enable the syndication connection.
+    syndicators:
+      type: sequence
+      label: Syndicators settings.
+      sequence:
+        type: syndicator.plugin.[id]
+        label: Syndicator settings

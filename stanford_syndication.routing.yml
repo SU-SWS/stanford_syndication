@@ -1,0 +1,7 @@
+stanford_syndication.settings:
+  path: '/admin/config/services/syndication'
+  defaults:
+    _title: 'Syndication Settings'
+    _form: 'Drupal\stanford_syndication\Form\SyndicationSettings'
+  requirements:
+    _permission: 'administer stanford_syndication configuration'
