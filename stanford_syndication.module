@@ -62,9 +62,28 @@ function stanford_syndication_entity_base_field_info(EntityTypeInterface $entity
       ->setLabel(t('Syndicate Content'))
       ->setDescription(t('Send a notification to the appropriate systems about this piece of content.'))
       ->setStorageRequired(TRUE)
+      ->setInitialValue(FALSE)
+      ->setDefaultValueCallback('_stanford_syndication_default_value')
       ->setDisplayConfigurable('form', TRUE);
   }
   return $fields;
+}
+
+/**
+ * Base field default value callback.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   Node entity.
+ * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+ *   Base field definition.
+ *
+ * @return bool
+ *   Default field value.
+ */
+function _stanford_syndication_default_value(NodeInterface $node, FieldDefinitionInterface $field_definition) {
+  $account = \Drupal::currentUser();
+  $config = \Drupal::config('stanford_syndication.settings');
+  return $config->get('enabled') && $account->hasPermission('administer stanford_syndication content');
 }
 
 /**
