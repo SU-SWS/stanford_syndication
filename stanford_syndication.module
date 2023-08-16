@@ -80,10 +80,20 @@ function stanford_syndication_entity_base_field_info(EntityTypeInterface $entity
  * @return bool
  *   Default field value.
  */
-function _stanford_syndication_default_value(NodeInterface $node, FieldDefinitionInterface $field_definition) {
-  $account = \Drupal::currentUser();
-  $config = \Drupal::config('stanford_syndication.settings');
-  return $config->get('enabled') && $account->hasPermission('administer stanford_syndication content');
+function _stanford_syndication_default_value(NodeInterface $node, FieldDefinitionInterface $field_definition): bool {
+  /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $form_display */
+  $form_display = \Drupal::entityTypeManager()
+    ->getStorage('entity_form_display')
+    ->load("node.{$node->bundle()}.default");
+
+  // Only have the default value true if the field is exposed on the form and
+  // the current user has permissions to syndicate content.
+  if ($form_display && $form_display->getComponent('syndication')) {
+    $account = \Drupal::currentUser();
+    $config = \Drupal::config('stanford_syndication.settings');
+    return $config->get('enabled') && $account->hasPermission('administer stanford_syndication content');
+  }
+  return FALSE;
 }
 
 /**
