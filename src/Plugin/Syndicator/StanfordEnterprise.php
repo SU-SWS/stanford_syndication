@@ -140,6 +140,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     $options = [
       'timeout' => 5,
       'headers' => [
+        'Content-Type' => 'application/json',
         'X-Webhook-Token' => $this->state->get('stanford_enterprise.token'),
       ],
       'body' => json_encode([
