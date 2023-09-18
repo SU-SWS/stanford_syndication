@@ -94,16 +94,14 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $this->plugin->setConfiguration(['webhook' => 'exception'] + $this->plugin->getConfiguration());
     $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('foo');
-    $this->expectException(ClientException::class);
-    $this->plugin->insert($node);
+    $this->assertNull($this->plugin->insert($node));
   }
 
   public function testUpdate() {
     $this->plugin->setConfiguration(['webhook' => 'exception'] + $this->plugin->getConfiguration());
     $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('foo');
-    $this->expectException(ClientException::class);
-    $this->plugin->update($node);
+    $this->assertNull($this->plugin->update($node));
   }
 
   public function guzzleRequest($method, $uri, $options) {

@@ -155,8 +155,8 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     try {
       $this->client->request('POST', $this->getConfiguration()['webhook'], $options);
     }
-    catch (\Throwable $e){
-      // The response will time out because the webhook triggers functionality on the 
+    catch (\Throwable $e) {
+      // The response will time out because the webhook triggers functionality on the
       // vendor that fetches all the jsonapi data and returns it in the response. We
       // don't care about the response data so we can ignore the error.
     }
