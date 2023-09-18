@@ -138,7 +138,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     }
 
     $options = [
-      'timeout' => 5,
+      'timeout' => 1,
       'headers' => [
         'Content-Type' => 'application/json',
         'X-Webhook-Token' => $this->state->get('stanford_enterprise.token'),
@@ -148,11 +148,18 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
         'domain' => $this->domain,
         'site_name' => $this->siteName,
         'content_type' => $node->bundle(),
-        'type' => 'teaser',
+        'type' => 'story',
         'id' => $node->uuid(),
       ]),
     ];
-    $this->client->request('POST', $this->getConfiguration()['webhook'], $options);
+    try {
+      $this->client->request('POST', $this->getConfiguration()['webhook'], $options);
+    }
+    catch (\Throwable $e){
+      // The response will time out because the webhook triggers functionality on the 
+      // vendor that fetches all the jsonapi data and returns it in the response. We
+      // don't care about the response data so we can ignore the error.
+    }
   }
 
   /**
