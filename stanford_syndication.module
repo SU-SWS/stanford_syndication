@@ -45,7 +45,11 @@ function stanford_syndication_node_delete(NodeInterface $node) {
  *   Event to dispatch.
  */
 function _stanford_syndication_dispatch_event(NodeInterface $node, string $action) {
-  if ($node->get('syndication')->getString() && $node->isPublished()) {
+  if (
+    $node->get('syndication')->getString() &&
+    $node->isPublished() &&
+    \Drupal::config('stanford_syndication.settings')->get('enabled')
+  ) {
     $event = new SyndicationEntityActionEvent($node, $action);
     \Drupal::service('event_dispatcher')
       ->dispatch($event, SyndicationEvents::ENTITY_ACTION);

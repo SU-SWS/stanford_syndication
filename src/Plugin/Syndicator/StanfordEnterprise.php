@@ -107,7 +107,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $token = $form_state->getValue('access_token');
     $form_state->unsetValue('access_token');
-    if(empty($token)){
+    if (empty($token)) {
       $this->state->delete('stanford_enterprise.token');
     }
     else {
