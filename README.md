@@ -18,6 +18,8 @@ Configuration
 
 Configure the desired content types and the access token at `/admin/config/services/syndication`.
 
+To protect non-prod environments add `$config['stanford_syndication.settings']['enabled'] = FALSE;` to a settings.php file
+
 
 Contribution / Collaboration
 ---
