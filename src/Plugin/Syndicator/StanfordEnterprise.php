@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\stanford_syndication\SyndicatorPluginBase;
@@ -128,7 +129,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    * {@inheritDoc}
    */
   public function insert(NodeInterface $node): void {
-    $access_token = $this->state->get('stanford_enterprise.token');
+    $access_token = Settings::get('stanford_syndication.stanford_enterprise.token', $this->state->get('stanford_enterprise.token'));
     if (
       !in_array($node->bundle(), $this->getConfiguration()['node_types']) ||
       !$this->getConfiguration()['webhook'] ||
