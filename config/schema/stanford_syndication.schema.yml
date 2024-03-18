@@ -20,9 +20,12 @@ stanford_syndication.settings:
     enabled:
       type: boolean
       label: Enable the syndication connection.
+    debug:
+      type: boolean
+      label: Debug syndication plugins
     syndicators:
       type: sequence
-      label: Syndicators settings.
+      label: Syndicator settings.
       sequence:
         type: syndicator.plugin.[id]
         label: Syndicator settings

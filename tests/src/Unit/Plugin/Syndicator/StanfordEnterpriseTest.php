@@ -8,6 +8,9 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\node\NodeTypeInterface;
@@ -63,6 +66,11 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $request_stack = new RequestStack();
     $request_stack->push(new Request());
 
+    $logger = $this->createMock(LoggerChannelInterface::class);
+
+    $logger_factory = $this->createMock(LoggerChannelFactoryInterface::class);
+    $logger_factory->method('get')->willReturn($logger);
+
     $container = new ContainerBuilder();
     $container->set('http_client', $client);
     $container->set('state', $state);
@@ -70,6 +78,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $container->set('request_stack', $request_stack);
     $container->set('config.factory', $configFactory);
     $container->set('string_translation', $this->getStringTranslationStub());
+    $container->set('logger.factory', $logger_factory);
 
     \Drupal::setContainer($container);
 

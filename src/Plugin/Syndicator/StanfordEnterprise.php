@@ -5,7 +5,7 @@ namespace Drupal\stanford_syndication\Plugin\Syndicator;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
 use Drupal\node\NodeInterface;
@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *   description = @Translation("News Syndication webhook.")
  * )
  */
-class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactoryPluginInterface {
+class StanfordEnterprise extends SyndicatorPluginBase {
 
   /**
    * Current site domain.
@@ -47,6 +47,7 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('logger.factory'),
       $container->get('http_client'),
       $container->get('state'),
       $container->get('entity_type.manager'),
@@ -58,8 +59,8 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
   /**
    * {@inheritDoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected ClientInterface $client, protected StateInterface $state, protected EntityTypeManagerInterface $entityTypeManager, RequestStack $requestStack, ConfigFactoryInterface $configFactory) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelFactoryInterface $logger_factory, protected ClientInterface $client, protected StateInterface $state, protected EntityTypeManagerInterface $entityTypeManager, RequestStack $requestStack, ConfigFactoryInterface $configFactory) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger_factory);
     $this->domain = $requestStack->getCurrentRequest()->getHost();
     $this->siteName = $configFactory->get('system.site')->get('name');
   }
@@ -96,7 +97,8 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
     $element['access_token'] = [
       '#type' => 'textfield',
       '#title' => $this->t('API Access Token'),
-      '#default_value' => $this->state->get('stanford_enterprise.token'),
+      '#default_value' => Settings::get('stanford_syndication.stanford_enterprise.token', $this->state->get('stanford_enterprise.token')),
+      '#attributes' => ['disabled' => !!Settings::get('stanford_syndication.stanford_enterprise.token')],
     ];
 
     return $element;
@@ -108,11 +110,15 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $token = $form_state->getValue('access_token');
     $form_state->unsetValue('access_token');
+
     if (empty($token)) {
       $this->state->delete('stanford_enterprise.token');
     }
     else {
-      $this->state->set('stanford_enterprise.token', $token);
+      // Don't set the state if the Settings are used.
+      if (Settings::get('stanford_syndication.stanford_enterprise.token') != $token) {
+        $this->state->set('stanford_enterprise.token', $token);
+      }
     }
 
     $chosen_types = array_values(array_filter($form_state->getValue('node_types')));
@@ -130,19 +136,23 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
    */
   public function insert(NodeInterface $node): void {
     $access_token = Settings::get('stanford_syndication.stanford_enterprise.token', $this->state->get('stanford_enterprise.token'));
+    $webhook = $this->getConfiguration()['webhook'];
     if (
       !in_array($node->bundle(), $this->getConfiguration()['node_types']) ||
-      !$this->getConfiguration()['webhook'] ||
+      !$webhook ||
       !$access_token
     ) {
+      if ($this->debug) {
+        $this->logger->info('Syndication not enabled. Node "%nid", Webhook: "%webhook", Token: "%token"', ['%nid' => $node->id(), '%webhook' => $webhook, '%token' => $access_token]);
+      }
       return;
     }
 
     $options = [
-      'timeout' => 1,
+      'timeout' => 2,
       'headers' => [
         'Content-Type' => 'application/json',
-        'X-Webhook-Token' => $this->state->get('stanford_enterprise.token'),
+        'X-Webhook-Token' => $access_token,
       ],
       'body' => json_encode([
         'cms_type' => 'Drupal 9',
@@ -154,12 +164,16 @@ class StanfordEnterprise extends SyndicatorPluginBase implements ContainerFactor
       ]),
     ];
     try {
-      $this->client->request('POST', $this->getConfiguration()['webhook'], $options);
+      $this->client->request('POST', $webhook, $options);
     }
     catch (\Throwable $e) {
       // The response will time out because the webhook triggers functionality on the
       // vendor that fetches all the jsonapi data and returns it in the response. We
-      // don't care about the response data so we can ignore the error.
+      // don't care about the response data, so we can ignore the error unless we
+      // are debugging.
+      if ($this->debug) {
+        $this->logger->info('Syndication error: %error', ['%error' => $e->getMessage()]);
+      }
     }
   }
 

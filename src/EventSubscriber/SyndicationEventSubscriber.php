@@ -68,6 +68,9 @@ class SyndicationEventSubscriber implements EventSubscriberInterface {
       try {
         /** @var \Drupal\stanford_syndication\SyndicatorInterface $plugin */
         $plugin = $this->pluginManager->createInstance($plugin_id, $this->syndicationConfig->get("syndicators.$plugin_id") ?? []);
+        if ($this->syndicationConfig->get('debug')) {
+          $plugin->debug();
+        }
         switch ($event->getAction()) {
           case SyndicationEntityActionEvent::INSERT_ACTION:
             $plugin->insert($event->getNode());

@@ -44,4 +44,14 @@ interface SyndicatorInterface extends PluginFormInterface, PluginInspectionInter
    */
   public function delete(NodeInterface $node): void;
 
+  /**
+   * Turn debugging on or off for more robust logging.
+   *
+   * @param bool $debug
+   *   If debugging should be enabled.
+   *
+   * @return self
+   */
+  public function debug(bool $debug = TRUE): self;
+
 }
