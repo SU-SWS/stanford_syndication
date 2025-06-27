@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\Messenger\MessengerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\node\NodeTypeInterface;
@@ -115,7 +115,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
 
   public function guzzleRequest($method, $uri, $options) {
     if ($uri === 'exception') {
-      throw new ClientException('Failed', $this->createMock(RequestInterface::class));
+      throw new ClientException('Failed', $this->createMock(RequestInterface::class), $this->createMock(ResponseInterface::class));
     }
   }
 
@@ -127,7 +127,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $this->assertTrue(in_array('foo', $elements['node_types']['#default_value']));
 
     $this->plugin->validateConfigurationForm($form, $form_state);
-    $this->assertFalse($form_state::hasAnyErrors());
+    $this->assertEmpty($form_state->getErrors());
 
     $form_state->setValue('webhook', 'foobar');
     $form_state->setValue('node_types', ['foo']);
