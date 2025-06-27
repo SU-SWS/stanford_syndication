@@ -3,6 +3,7 @@ type: module
 description: Provide webhook calls to other CMS systems.
 package: Stanford
 core_version_requirement: ^10 || ^11
+version: 1.0.x
 configure: stanford_syndication.settings
 dependencies:
   - drupal:node
