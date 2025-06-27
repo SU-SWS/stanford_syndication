@@ -127,7 +127,7 @@ class StanfordEnterpriseTest extends UnitTestCase {
     $this->assertTrue(in_array('foo', $elements['node_types']['#default_value']));
 
     $this->plugin->validateConfigurationForm($form, $form_state);
-    $this->assertFalse($form_state::hasAnyErrors());
+    $this->assertEmpty($form_state->getErrors());
 
     $form_state->setValue('webhook', 'foobar');
     $form_state->setValue('node_types', ['foo']);
