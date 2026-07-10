@@ -40,6 +40,20 @@ class StanfordEnterprise extends SyndicatorPluginBase {
   protected string $siteName;
 
   /**
+   * Captured request host for shutdown-time use.
+   *
+   * @var string
+   */
+  protected static string $capturedHost = '';
+
+  /**
+   * Sets the captured request host.
+   */
+  public static function setCapturedHost(string $host): void {
+    self::$capturedHost = $host;
+  }
+
+  /**
    * {@inheritDoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
@@ -61,7 +75,8 @@ class StanfordEnterprise extends SyndicatorPluginBase {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerChannelFactoryInterface $logger_factory, protected ClientInterface $client, protected StateInterface $state, protected EntityTypeManagerInterface $entityTypeManager, RequestStack $requestStack, ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger_factory);
-    $this->domain = $requestStack->getCurrentRequest()->getHost();
+    $request = $requestStack->getCurrentRequest();
+    $this->domain = self::$capturedHost ?: ($request ? $request->getHost() : '');
     $this->siteName = $configFactory->get('system.site')->get('name');
   }
 

@@ -16,11 +16,13 @@ use Drupal\node\NodeInterface;
 use Drupal\stanford_syndication\Events\SyndicationEntityActionEventInterface;
 use Drupal\stanford_syndication\Events\SyndicationEntityActionEvent;
 use Drupal\stanford_syndication\Events\SyndicationEvents;
+use Drupal\stanford_syndication\Plugin\Syndicator\StanfordEnterprise;
 
 /**
  * Implements hook_ENTITY_TYPE_insert().
  */
 function stanford_syndication_node_insert(NodeInterface $node) {
+  _stanford_syndication_capture_host();
   drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::INSERT_ACTION);
 }
 
@@ -28,6 +30,7 @@ function stanford_syndication_node_insert(NodeInterface $node) {
  * Implements hook_ENTITY_TYPE_update().
  */
 function stanford_syndication_node_update(NodeInterface $node) {
+  _stanford_syndication_capture_host();
   drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::UPDATE_ACTION);
 }
 
@@ -35,7 +38,16 @@ function stanford_syndication_node_update(NodeInterface $node) {
  * Implements hook_ENTITY_TYPE_delete().
  */
 function stanford_syndication_node_delete(NodeInterface $node) {
+  _stanford_syndication_capture_host();
   drupal_register_shutdown_function('_stanford_syndication_dispatch_event', $node, SyndicationEntityActionEventInterface::DELETE_ACTION);
+}
+
+/**
+ * Captures the current request host for shutdown-time syndication.
+ */
+function _stanford_syndication_capture_host(): void {
+  $request = \Drupal::request();
+  StanfordEnterprise::setCapturedHost($request ? $request->getHost() : '');
 }
 
 /**
